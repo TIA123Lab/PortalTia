@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>PLC Studio – Simulator Ladder</title>
+<style>
+:root{--bg:#eef1f4;--pn:#fff;--tx:#1d2733;--mu:#6b7785;--ln:#c9d1d9;--ac:#0a8f9c;--on:#1fa84f;--off:#8a95a1;--wire:#5c6772;--hd:#2b3a4a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14191f;--pn:#1d252d;--tx:#e4e9ee;--mu:#8d99a6;--ln:#34404c;--ac:#2cc4d3;--on:#3ddc7a;--off:#6c7782;--wire:#8d99a6;--hd:#0f1419;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14191f;--pn:#1d252d;--tx:#e4e9ee;--mu:#8d99a6;--ln:#34404c;--ac:#2cc4d3;--on:#3ddc7a;--off:#6c7782;--wire:#8d99a6;--hd:#0f1419;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header.top{background:var(--hd);color:#fff;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header.top h1{font-size:16px;margin:0;font-weight:600}header.top small{opacity:.7}
+.sp{flex:1}
+button,select,input{font:inherit;color:var(--tx)}
+button{background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--ac)}button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}button.run{background:var(--on);color:#04210f;border-color:var(--on);font-weight:600}button.stop{background:#d64545;color:#fff;border-color:#d64545;font-weight:600}
+.wrap{display:grid;grid-template-columns:1fr 330px;gap:12px;padding:12px;max-width:1500px;margin:auto}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:10px}
+.card h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu)}
+aside{display:flex;flex-direction:column;gap:12px}
+.net{background:var(--pn);border:1px solid var(--ln);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.net>header{display:flex;gap:6px;align-items:center;padding:6px 10px;background:color-mix(in srgb,var(--ac) 12%,var(--pn));border-bottom:1px solid var(--ln)}
+.net>header b{color:var(--ac)}.net>header input{flex:1;min-width:0;border:0;background:transparent;font-weight:600}
+.net>header button{padding:2px 8px}
+.rung{display:flex;align-items:flex-start;overflow-x:auto;padding:14px 8px;gap:0}
+.rail{width:4px;align-self:stretch;background:var(--wire);border-radius:2px;flex:none;min-height:70px}
+.rung.live .rail{background:var(--on)}
+.br{display:flex;flex-direction:column;border-left:2px solid var(--wire);border-right:2px solid var(--wire)}
+.lane{display:flex;align-items:flex-start;min-height:74px;min-width:70px;position:relative;padding:0 4px;cursor:pointer;border-radius:4px}
+.lane::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--wire);z-index:0}
+.lane.live::before{background:var(--on)}
+.lane.sel{outline:2px dashed var(--ac);outline-offset:-2px}
+.el{position:relative;z-index:1;width:92px;text-align:center;flex:none}
+.el .x{position:absolute;right:2px;top:-8px;font-size:12px;color:var(--mu);cursor:pointer;display:none}.el:hover .x{display:block}
+.sym{height:40px;width:36px;margin:0 auto;background:var(--pn);display:flex;align-items:center;justify-content:center;gap:12px;position:relative}
+.sym b{width:3px;height:26px;background:var(--wire);display:block}
+.sym em{position:absolute;font-style:normal;font-size:12px;font-weight:700;color:var(--wire)}
+.el.on .sym b,.el.on .sym em{background:var(--on);color:var(--on)}.el.on .sym em{background:none}
+.ad{width:84px;text-align:center;border:1px solid var(--ln);border-radius:4px;background:var(--pn);padding:2px;font-size:12px}
+.el small{display:block;color:var(--mu);font-size:11px;min-height:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.out{position:relative;z-index:1;border:2px solid var(--wire);border-radius:6px;padding:6px;margin:6px 0 6px 4px;background:var(--pn);min-width:132px;display:flex;flex-direction:column;gap:4px;font-size:12px;flex:none}
+.out.on{border-color:var(--on);box-shadow:0 0 0 2px color-mix(in srgb,var(--on) 30%,transparent)}
+.out select,.out input{width:100%;border:1px solid var(--ln);background:var(--pn);border-radius:4px;padding:2px}
+.out label{color:var(--mu);font-size:11px}
+.io{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mu)}
+.sw button{width:100%;padding:8px 0;font-weight:600}.sw button.on{background:var(--on);color:#04210f;border-color:var(--on)}
+.lamp{width:100%;padding:8px 0;border-radius:6px;text-align:center;font-weight:600;border:1px solid var(--ln);color:var(--mu)}
+.lamp.on{background:#ffcf33;color:#3a2c00;border-color:#e0b000;box-shadow:0 0 10px #ffcf33}
+.cm{width:100%;border:0;border-bottom:1px dashed var(--ln);background:transparent;font-size:11px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:12px}td{padding:2px 4px;border-bottom:1px solid var(--ln)}td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.t1{color:var(--on);font-weight:600}
+.pal{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+pre{white-space:pre-wrap;font:12px/1.5 ui-monospace,Consolas,monospace;margin:0;max-height:260px;overflow:auto;background:var(--bg);padding:8px;border-radius:6px}
+.hint{color:var(--mu);font-size:12px;margin:6px 0 0}
+</style></head><body>
+<header class="top"><h1>PLC Studio</h1><small>Editor ladder (LAD) &amp; simulator scan cycle</small><span class="sp"></span>
+<select id="ex" aria-label="Contoh program"><option value="">Contoh program…</option></select>
+<button id="runb" class="run">▶ RUN</button></header>
+<datalist id="addr"></datalist>
+<div class="wrap"><main><div id="ed"></div><button class="pri" id="addn">+ Network baru</button>
+<div class="card" style="margin-top:12px"><h3>Kode SCL (salin ke TIA Portal)</h3><pre id="scl"></pre><p class="hint">Hasil ekspor otomatis dari ladder. Untuk timer dan counter, deklarasikan instance IEC_Timer / IEC_Counter di blok data sesuai nama (T1, C1).</p></div></main>
+<aside>
+<div class="card"><h3>Palet instruksi</h3><div class="pal"><button data-add="NO">┤ ├ Kontak NO</button><button data-add="NC">┤/├ Kontak NC</button><button data-add="P">┤P├ Flank naik</button><button id="brb">⑂ Cabang paralel</button></div>
+<p class="hint">Klik sebuah lane (garis) pada network untuk memilihnya, lalu tambahkan kontak dari sini. Ubah alamat langsung di kotak bawah simbol.</p></div>
+<div class="card"><h3>Input simulasi (%I0.x)</h3><div class="io" id="ins"></div></div>
+<div class="card"><h3>Output (%Q0.x)</h3><div class="io" id="outs"></div></div>
+<div class="card"><h3>Watch table</h3><table id="watch"></table></div>
+<button id="rst">Hapus semua program</button>
+</aside></div>
+<script>
+const $=s=>document.querySelector(s);let uid=Date.now(),prog=[],cm={},run=false,tags={},rt={t:{},c:{},on:{},ln:[]},prev={},sel={n:0,l:"s"};const DT=100;
+const E=(t,a)=>({id:"e"+uid++,t,a});
+const O=(t,a,pv,rs)=>({t,a,pv:pv||0,rs:rs||"I0.3"});
+const N=(title,o)=>Object.assign({title,br:0,a:[],b:[],s:[],out:O("COIL","Q0.0")},o);
+const EX={
+"Start/Stop motor (self-hold)":()=>[N("Start/Stop motor",{br:1,a:[E("NO","I0.0")],b:[E("NO","Q0.0")],s:[E("NC","I0.1")],out:O("COIL","Q0.0")})],
+"Timer ON-delay 3 detik":()=>[N("Aktifkan timer",{s:[E("NO","I0.0")],out:O("TON","T1",3000)}),N("Lampu setelah delay",{s:[E("NO","T1")],out:O("COIL","Q0.1")})],
+"Counter 5 pulsa":()=>[N("Hitung pulsa I0.2",{s:[E("NO","I0.2")],out:O("CTU","C1",5,"I0.3")}),N("Output saat 5 hitungan",{s:[E("NO","C1")],out:O("COIL","Q0.2")})],
+"Lampu berkedip":()=>[N("Timer 1",{s:[E("NC","T2")],out:O("TON","T1",1000)}),N("Timer 2",{s:[E("NO","T1")],out:O("TON","T2",1000)}),N("Lampu kedip",{s:[E("NO","T1")],out:O("COIL","Q0.0")})]};
+const ADDR=[];for(let i=0;i<8;i++)ADDR.push("I0."+i);for(let i=0;i<8;i++)ADDR.push("Q0."+i);for(let i=0;i<8;i++)ADDR.push("M0."+i);for(let i=1;i<=8;i++)ADDR.push("T"+i,"C"+i);
+$("#addr").innerHTML=ADDR.map(a=>`<option value="${a}">`).join("");
+Object.keys(EX).forEach(k=>$("#ex").insertAdjacentHTML("beforeend",`<option>${k}</option>`));
+function save(){try{localStorage.setItem("plcstudio",JSON.stringify({prog,cm}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem("plcstudio")||"null");if(d&&d.prog&&d.prog.length){prog=d.prog;cm=d.cm||{};return}}catch(e){}prog=EX["Start/Stop motor (self-hold)"]()}
+const find=id=>{for(const n of prog)for(const k of["a","b","s"])for(const e of n[k])if(e.id===id)return[n[k],e]};
+const lbl=a=>cm[a]||"";
+function elH(e){return`<div class="el" data-id="${e.id}"><span class="x" data-del="${e.id}">×</span><div class="sym"><b></b><b></b><em>${e.t==="NC"?"/":e.t==="P"?"P":""}</em></div><input class="ad" list="addr" value="${e.a}" data-ad="${e.id}"><small>${lbl(e.a)}</small></div>`}
+function laneH(n,i,k,cls){return`<div class="lane ${cls||""} ${sel.n===i&&sel.l===k?"sel":""}" data-n="${i}" data-l="${k}">${n[k].map(elH).join("")}</div>`}
+function outH(n,i){const o=n.out;const T=["COIL","SET","RESET","TON","CTU"];
+let x=`<select data-o="t" data-n="${i}">${T.map(t=>`<option ${t===o.t?"selected":""}>${t}</option>`).join("")}</select><input list="addr" data-o="a" data-n="${i}" value="${o.a}">`;
+if(o.t==="TON")x+=`<label>PT (ms)</label><input type="number" data-o="pv" data-n="${i}" value="${o.pv}">`;
+if(o.t==="CTU")x+=`<label>PV (hitungan)</label><input type="number" data-o="pv" data-n="${i}" value="${o.pv}"><label>Reset oleh</label><input list="addr" data-o="rs" data-n="${i}" value="${o.rs}">`;
+return`<div class="out" data-out="${i}">${x}</div>`}
+function render(){$("#ed").innerHTML=prog.map((n,i)=>`<section class="net"><header><b>Network ${i+1}</b><input data-title="${i}" value="${n.title.replace(/"/g,"&quot;")}"><button data-up="${i}">▲</button><button data-dn="${i}">▼</button><button data-rm="${i}">✕</button></header><div class="rung" data-r="${i}"><i class="rail"></i>${n.br?`<div class="br">${laneH(n,i,"a")}${laneH(n,i,"b")}</div>`:laneH(n,i,"a")}${laneH(n,i,"s","ser")}${outH(n,i)}<i class="rail"></i></div></section>`).join("");
+$("#scl").textContent=scl();save();live()}
+function live(){document.querySelectorAll(".el").forEach(el=>el.classList.toggle("on",!!rt.on[el.dataset.id]));
+prog.forEach((n,i)=>{const r=document.querySelector(`.rung[data-r="${i}"]`);if(!r)return;const l=rt.ln[i]||[];r.classList.toggle("live",!!l[2]);
+r.querySelectorAll(".lane").forEach(x=>x.classList.toggle("live",x.dataset.l==="a"?!!l[0]:x.dataset.l==="b"?!!l[1]:!!l[2]));
+const o=r.querySelector(".out");if(o)o.classList.toggle("on",!!l[2])});
+document.querySelectorAll("[data-in]").forEach(b=>b.classList.toggle("on",!!tags[b.dataset.in]));
+document.querySelectorAll("[data-q]").forEach(b=>b.classList.toggle("on",!!tags[b.dataset.q]));
+const used=new Set();prog.forEach(n=>{["a","b","s"].forEach(k=>n[k].forEach(e=>used.add(e.a)));used.add(n.out.a);if(n.out.t==="CTU")used.add(n.out.rs)});
+$("#watch").innerHTML=[...used].sort().map(a=>{let v=tags[a]?1:0,x=`<span class="${v?"t1":""}">${v}</span>`;if(a[0]==="T"&&rt.t[a])x+=` · ${rt.t[a].acc} ms`;if(a[0]==="C"&&rt.c[a])x+=` · CV ${rt.c[a].cv}`;return`<tr><td>${a}</td><td>${x}</td></tr>`}).join("")}
+function lane(arr,p){for(const e of arr){const v=!!tags[e.a];let c=e.t==="NO"?v:e.t==="NC"?!v:(v&&!prev[e.id]);if(e.t==="P")prev[e.id]=v;rt.on[e.id]=run&&p&&c;p=p&&c}return p}
+function scan(){if(!run)return;prog.forEach((n,i)=>{const la=lane(n.a,true),lb=n.br?(n.b.length?lane(n.b,true):false):false;const g=n.br?(la||lb):la;const res=lane(n.s,g);rt.ln[i]=[la,lb,res];
+const o=n.out,k=o.a;if(o.t==="COIL")tags[k]=res;else if(o.t==="SET"){if(res)tags[k]=true}else if(o.t==="RESET"){if(res)tags[k]=false}
+else if(o.t==="TON"){const t=rt.t[k]||(rt.t[k]={acc:0});t.acc=res?Math.min(t.acc+DT,o.pv):0;tags[k]=res&&t.acc>=o.pv}
+else if(o.t==="CTU"){const c=rt.c[k]||(rt.c[k]={cv:0,pe:false});if(tags[o.rs])c.cv=0;else if(res&&!c.pe)c.cv++;c.pe=res;tags[k]=c.cv>=o.pv}});live()}
+setInterval(scan,DT);
+function A(a){return/^[IQM]/.test(a)?"%"+a:`"${a}".Q`}
+function ex(e){return e.t==="NC"?"NOT "+A(e.a):e.t==="P"?`"R_TRIG_${e.a}".Q`:A(e.a)}
+function ln(arr){return arr.length?arr.map(ex).join(" AND "):"TRUE"}
+function scl(){return prog.map((n,i)=>{let g=n.br?`(${ln(n.a)}) OR (${n.b.length?ln(n.b):"FALSE"})`:ln(n.a);let s=n.s.length?`(${g}) AND ${ln(n.s)}`:g;const o=n.out,a=A(o.a);
+let c=o.t==="COIL"?`${a} := ${s};`:o.t==="SET"?`IF ${s} THEN ${a} := TRUE; END_IF;`:o.t==="RESET"?`IF ${s} THEN ${a} := FALSE; END_IF;`:o.t==="TON"?`"${o.a}"(IN := ${s}, PT := T#${o.pv}ms);`:`"${o.a}"(CU := ${s}, R := ${A(o.rs)}, PV := ${o.pv});`;
+return`// Network ${i+1}: ${n.title}\n${c}`}).join("\n\n")}
+$("#ed").addEventListener("click",e=>{const t=e.target;if(t.dataset.del){const[arr]=find(t.dataset.del);arr.splice(arr.findIndex(x=>x.id===t.dataset.del),1);return render()}
+const u=t.dataset.up,d=t.dataset.dn,r=t.dataset.rm;
+if(u!==undefined&&+u>0){[prog[u-1],prog[u]]=[prog[u],prog[u-1]];return render()}
+if(d!==undefined&&+d<prog.length-1){[prog[+d+1],prog[d]]=[prog[d],prog[+d+1]];return render()}
+if(r!==undefined){prog.splice(+r,1);sel={n:0,l:"s"};return render()}
+if(/INPUT|SELECT/.test(t.tagName))return;const l=t.closest(".lane");if(l){sel={n:+l.dataset.n,l:l.dataset.l};render()}});
+$("#ed").addEventListener("change",e=>{const t=e.target;
+if(t.dataset.ad){const[,el]=find(t.dataset.ad);el.a=t.value.trim().toUpperCase();render()}
+else if(t.dataset.title!==undefined){prog[t.dataset.title].title=t.value;save();$("#scl").textContent=scl()}
+else if(t.dataset.o){const o=prog[t.dataset.n].out,k=t.dataset.o;if(k==="pv")o.pv=Math.max(0,+t.value||0);else if(k==="t"){o.t=t.value;o.pv=t.value==="TON"?3000:t.value==="CTU"?5:0;if(o.t==="TON"&&o.a[0]!=="T")o.a="T1";if(o.t==="CTU"&&o.a[0]!=="C")o.a="C1";if(/COIL|SET|RESET/.test(o.t)&&/^[TC]/.test(o.a))o.a="Q0.0"}else o[k]=t.value.trim().toUpperCase();render()}});
+document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{if(!prog.length)return;const n=prog[sel.n]||prog[0];let l=sel.l;if(l==="b"&&!n.br)l="a";n[l].push(E(b.dataset.add,"I0.0"));render()});
+$("#brb").onclick=()=>{const n=prog[sel.n]||prog[0];if(!n)return;n.br=n.br?0:1;if(!n.br){n.a.push(...n.b);n.b=[];if(sel.l==="b")sel.l="a"}render()};
+$("#addn").onclick=()=>{prog.push(N("Network baru",{out:O("COIL","Q0.0")}));sel={n:prog.length-1,l:"s"};render()};
+$("#rst").onclick=()=>{prog=[N("Network 1")];tags={};rt={t:{},c:{},on:{},ln:[]};render()};
+$("#ex").onchange=e=>{if(EX[e.target.value]){prog=EX[e.target.value]();tags={};rt={t:{},c:{},on:{},ln:[]};prev={};sel={n:0,l:"s"};render()}e.target.value=""};
+$("#runb").onclick=()=>{run=!run;const b=$("#runb");b.textContent=run?"■ STOP":"▶ RUN";b.className=run?"stop":"run";if(!run){Object.keys(tags).forEach(k=>{if(k[0]!=="I")delete tags[k]});rt={t:{},c:{},on:{},ln:[]};prev={}}live()};
+function io(){let a="",b="";for(let i=0;i<8;i++){a+=`<div class="sw"><button data-in="I0.${i}">I0.${i}</button><input class="cm" data-c="I0.${i}" value="${lbl("I0."+i)}" placeholder="label"></div>`;b+=`<div class="sw"><div class="lamp" data-q="Q0.${i}">Q0.${i}</div><input class="cm" data-c="Q0.${i}" value="${lbl("Q0."+i)}" placeholder="label"></div>`}
+$("#ins").innerHTML=a;$("#outs").innerHTML=b;
+document.querySelectorAll("[data-in]").forEach(x=>x.onclick=()=>{tags[x.dataset.in]=!tags[x.dataset.in];live()});
+document.querySelectorAll("[data-c]").forEach(x=>x.onchange=()=>{cm[x.dataset.c]=x.value;render()})}
+load();io();render();
+</script></body></html>
